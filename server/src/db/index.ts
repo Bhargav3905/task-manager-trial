@@ -1,9 +1,9 @@
 import "dotenv/config";
-// @ts-expect-error pg typings are not installed in this project
 import { Pool } from "pg";
+import { databaseUrl } from "../utils/env.js";
 
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
+  connectionString: databaseUrl,
   ssl: {
     rejectUnauthorized: false,
   },
