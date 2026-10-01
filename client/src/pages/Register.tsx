@@ -5,7 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useAuth } from "../hooks/useAuth";
 import { registerSchema, type RegisterFormData } from "../schemas/auth.schema";
 import { Button } from "@base-ui/react/button";
-
+import toast from "react-hot-toast";
 
 export default function Register() {
   const { register: registerUser } = useAuth();
@@ -22,10 +22,10 @@ export default function Register() {
   async function onSubmit(data: RegisterFormData) {
     try {
       await registerUser(data.name, data.email, data.password);
-
+      toast.success("Account created successfully");
       navigate("/dashboard");
     } catch (error: any) {
-      alert(error.response?.data?.message || "Registration failed");
+      toast.error(error.response?.data?.message || "Registration failed");
     }
   }
 

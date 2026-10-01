@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import type { Task } from "../types/task";
 import type { TaskFormData } from "../schemas/task.schema";
+import toast from "react-hot-toast";
 
 import {
   createTask,
@@ -22,6 +23,17 @@ export default function Dashboard() {
 
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [priorityFilter, setPriorityFilter] = useState("all");
+
+  const filteredTasks = tasks.filter((task) => {
+    const statusMatch = statusFilter === "all" || task.status === statusFilter;
+
+    const priorityMatch =
+      priorityFilter === "all" || task.priority === priorityFilter;
+
+    return statusMatch && priorityMatch;
+  });
 
   async function loadTasks() {
     try {
@@ -41,20 +53,20 @@ export default function Dashboard() {
   async function handleCreateTask(data: TaskFormData) {
     try {
       const task = await createTask(data);
-
       setTasks((current) => [task, ...current]);
-    } catch (error) {
-      console.error("Failed to create task", error);
+      toast.success("Task created");
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || "Failed to create task");
     }
   }
 
   async function handleDeleteTask(id: number) {
     try {
       await deleteTask(id);
-
       setTasks((current) => current.filter((task) => task.id !== id));
-    } catch (error) {
-      console.error("Failed to delete task", error);
+      toast.success("Task deleted");
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || "Failed to delete task");
     }
   }
 
@@ -63,12 +75,12 @@ export default function Dashboard() {
       const updatedTask = await updateTask(id, {
         status,
       });
-
       setTasks((current) =>
         current.map((task) => (task.id === id ? updatedTask : task)),
       );
-    } catch (error) {
-      console.error("Failed to update task", error);
+      toast.success("Task updated");
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || "Failed to update task");
     }
   }
 
@@ -84,20 +96,41 @@ export default function Dashboard() {
         <div className="flex items-center justify-between border-b pb-4">
           <div>
             <h1 className="text-2xl font-bold">Task Manager</h1>
-
             <p className="text-sm text-gray-500">Welcome, {user?.name}</p>
           </div>
 
-          <Button variant="outline" onClick={handleLogout}>
+          <Button className="rounded-md border px-4 py-2" onClick={handleLogout}>
             Logout
           </Button>
         </div>
 
-        {/* Create Task */}
         <TaskForm onTaskCreated={handleCreateTask} />
 
-        {/* Tasks */}
         <section>
+          <div className="flex flex-wrap gap-3">
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="rounded-md border p-2"
+            >
+              <option value="all">All Status</option>
+              <option value="todo">Todo</option>
+              <option value="in_progress">In Progress</option>
+              <option value="completed">Completed</option>
+            </select>
+
+            <select
+              value={priorityFilter}
+              onChange={(e) => setPriorityFilter(e.target.value)}
+              className="rounded-md border p-2"
+            >
+              <option value="all">All Priority</option>
+              <option value="low">Low</option>
+              <option value="medium">Medium</option>
+              <option value="high">High</option>
+            </select>
+          </div>
+
           <h2 className="mb-4 text-xl font-semibold">My Tasks</h2>
 
           {loading ? (
@@ -108,7 +141,7 @@ export default function Dashboard() {
             </p>
           ) : (
             <div className="space-y-4">
-              {tasks.map((task) => (
+              {filteredTasks.map((task) => (
                 <TaskCard
                   key={task.id}
                   task={task}

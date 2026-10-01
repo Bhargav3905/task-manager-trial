@@ -1,12 +1,10 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import toast from "react-hot-toast";
 
 import { useAuth } from "../hooks/useAuth";
-import {
-  loginSchema,
-  type LoginFormData,
-} from "../schemas/auth.schema";
+import { loginSchema, type LoginFormData } from "../schemas/auth.schema";
 import { Button } from "@base-ui/react/button";
 
 export default function Login() {
@@ -24,12 +22,10 @@ export default function Login() {
   async function onSubmit(data: LoginFormData) {
     try {
       await login(data.email, data.password);
+      toast.success("Login successful");
       navigate("/dashboard");
     } catch (error: any) {
-      alert(
-        error.response?.data?.message ||
-          "Login failed"
-      );
+      toast.error(error.response?.data?.message || "Login failed");
     }
   }
 
@@ -40,13 +36,9 @@ export default function Login() {
         className="w-full max-w-md space-y-5 rounded-xl border p-6 shadow-sm"
       >
         <div>
-          <h1 className="text-2xl font-bold">
-            Login
-          </h1>
+          <h1 className="text-2xl font-bold">Login</h1>
 
-          <p className="text-sm text-gray-500">
-            Sign in to your account
-          </p>
+          <p className="text-sm text-gray-500">Sign in to your account</p>
         </div>
 
         <div>
@@ -58,9 +50,7 @@ export default function Login() {
           />
 
           {errors.email && (
-            <p className="mt-1 text-sm text-red-500">
-              {errors.email.message}
-            </p>
+            <p className="mt-1 text-sm text-red-500">{errors.email.message}</p>
           )}
         </div>
 
@@ -79,22 +69,13 @@ export default function Login() {
           )}
         </div>
 
-        <Button
-          type="submit"
-          disabled={isSubmitting}
-          className="w-full"
-        >
-          {isSubmitting
-            ? "Logging in..."
-            : "Login"}
+        <Button type="submit" disabled={isSubmitting} className="w-full">
+          {isSubmitting ? "Logging in..." : "Login"}
         </Button>
 
         <p className="text-center text-sm">
           Don't have an account?{" "}
-          <Link
-            to="/register"
-            className="underline"
-          >
+          <Link to="/register" className="underline">
             Register
           </Link>
         </p>
